@@ -1,9 +1,6 @@
 ---
 title: "Week 2 - Project"
-output:
-  html_document: 
-  keep_md: true
-  pdf_document: default
+output: rmarkdown::github_document
 ---
 
 ### 1. Code for the reading in the dataset and/or processing the data
