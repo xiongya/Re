@@ -1,0 +1,76 @@
+---
+title: "Week 2 - Project"
+output:
+  html_document: 
+  keep_md: true
+  pdf_document: default
+---
+
+### 1. Code for the reading in the dataset and/or processing the data
+```{r, echo=TRUE}
+unzip("data.zip")
+data <- read.csv("activity.csv")
+str(data)
+```
+The data has NA values in steps. Let's remove those missing values,
+```{r, echo=TRUE}
+Data <- na.omit(data)
+str(Data)
+```
+### 2. Histogram of the total number of steps taken each day
+```{r, echo=TRUE}
+library(ggplot2)
+library(dplyr)
+Data.day <- group_by(Data, date)
+Data.day <- summarise(Data.day, steps = sum(steps))
+hist(Data.day$steps, breaks = 30, xlab = "Steps", main = "Total number of steps taken each day")
+```
+
+### 3. Mean and median number of steps taken each day
+```{r, echo=TRUE}
+mean(Data.day$steps)
+median(Data.day$steps)
+```
+
+### 4. Time series plot of the average number of steps taken
+```{r, echo=TRUE}
+Data.interval <- group_by(Data, interval)
+Data.interval <- summarise(Data.interval, steps = mean(steps))
+ggplot(Data.interval, aes(x=interval,y=steps)) + geom_line()
+```
+
+### 5. The 5-minute interval that, on average, contains the maximum number of steps
+```{r, echo=TRUE}
+subset(Data.interval, steps == max(steps))
+```
+
+### 6. Code to describe and show a strategy for imputing missing data
+My strategy is to use the mean of 5-minute interval to replace the missing data.
+```{r, echo=TRUE}
+sum(is.na(data))
+impute.fun <- function(x) replace(x, is.na(x), mean(x, na.rm = TRUE))
+data.complete <- (data %>% group_by(interval) %>% mutate(steps = impute.fun(steps)))
+head(data.complete)
+sum(is.na(data.complete))
+```
+
+### 7. Histogram of the total number of steps taken each day after missing values are imputed
+```{r, echo=TRUE}
+data.complete.day <- group_by(data.complete, date)
+data.complete.day <- summarise(data.complete.day, steps = sum(steps))
+hist(data.complete.day$steps, breaks = 30, xlab = "Steps", main = "Total number of steps taken each day after missing vaules are imputed", cex.main=0.8)
+```
+
+### 8. Panel plot comparing the average number of steps taken per 5-minute interval across weekdays and weekends
+```{r, echo=TRUE}
+library(lubridate)
+data.complete$weekday <- weekdays(ymd(data.complete$date))
+data.complete$weekend <- ifelse(data.complete$weekday == "Saturday" | data.complete$weekday == "Sunday", "Y", "N")
+WW <- data.complete %>% group_by(interval, weekend) %>% summarize(mean = mean(steps))
+ggplot(WW, aes(x = interval, y = mean)) + geom_line() +
+    facet_grid(weekend ~.) + xlab("Interval") + ylab("Mean of Steps") +
+    ggtitle("Comparison of Average Number of Steps in Each Interval")
+```
+
+
+
