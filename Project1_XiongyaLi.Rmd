@@ -15,7 +15,7 @@ Data <- na.omit(data)
 str(Data)
 ```
 ### 2. Histogram of the total number of steps taken each day
-```{r, echo=TRUE}
+```{r, echo=TRUE, fig.show='asis'}
 library(ggplot2)
 library(dplyr)
 Data.day <- group_by(Data, date)
